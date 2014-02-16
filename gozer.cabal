@@ -1,0 +1,24 @@
+name:                gozer
+version:             0.1.0.0
+synopsis:            Gozer the Gozerian destroys.
+-- description:
+license:             BSD3
+license-file:        LICENSE
+author:              Ben Bangert
+maintainer:          ben@groovie.org
+-- copyright:
+category:            Language
+build-type:          Simple
+extra-source-files:  CHANGELOG, README.rst
+cabal-version:       >=1.10
+
+flag developer
+  description: operate in developer mode
+  default: False
+
+executable gozer
+  default-language: Haskell2010
+  main-is:    src/Main.hs
+  Build-depends:
+    base >=4.6 && <4.7
+  ghc-options: -O2 -Wall -threaded -rtsopts
