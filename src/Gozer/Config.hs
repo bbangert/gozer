@@ -1,0 +1,2 @@
+module Gozer.Config () where
+
