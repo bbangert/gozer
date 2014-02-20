@@ -23,7 +23,7 @@ Compiling
     At the time of this writing, the oauthenticated library has a bug
     which requires the latest fix branch: ``https://github.com/tel/oauthenticated/tree/fix-issue6``
     Check that branch out, then add it to the build with:
-        ``cabal add-source /path/to/oauthenticated``
+        ``cabal sandbox add-source /path/to/oauthenticated``
 
 3. Get the dependencies: ``cabal install --only-dependencies``
 4. Compile: ``cabal build``
