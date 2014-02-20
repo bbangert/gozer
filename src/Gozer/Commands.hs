@@ -7,6 +7,7 @@ module Gozer.Commands (
     ) where
 
 import Control.Applicative ((<$>))
+import Control.Monad (unless)
 import Crypto.Random (SystemRNG)
 import Data.Aeson (decode)
 import Data.ByteString.Lazy (ByteString)
@@ -62,15 +63,11 @@ loadTweets name index creds m gen = do
     (resp, gen') <- lift $ runRequest (timelineUrl name index) creds m gen
     let tweets = fromJust $ (decode (responseBody resp) :: Maybe [Tweet])
     mapM_ yield tweets
-    if null tweets
-        then return ()
-        else do
-            let lastId = tweetId $ last tweets
-            case index of
-                Just x -> if x == lastId
-                    then return ()
-                    else loadTweets name (Just lastId) creds m gen'
-                Nothing -> loadTweets name (Just lastId) creds m gen'
+    unless (null tweets) $ do
+        let lastId = tweetId $ last tweets
+        case index of
+            Just x -> unless (x == lastId) $ loadTweets name (Just lastId) creds m gen'
+            Nothing -> loadTweets name (Just lastId) creds m gen'
 
 tweetsNewerThan :: NominalDiffTime -> UTCTime -> Tweet -> Bool
 tweetsNewerThan period now t = tweetCreatedAt t > oldTime
