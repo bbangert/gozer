@@ -25,7 +25,7 @@ You should now have a ``gozer`` binary under ``dist/build/gozer``.
 Usage
 -----
 
-Create a config file like so:
+Create a config file:
 
 .. code-block:: ini
 
@@ -44,3 +44,8 @@ Then run it:
     $ gozer config.ini
 
 Tweets will be deleted.
+
+Why?
+----
+
+.. image:: https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Duchamp_Fountaine.jpg/454px-Duchamp_Fountaine.jpg
