@@ -7,8 +7,7 @@ import Network.HTTP.Client (newManager)
 import Network.HTTP.Client.TLS (tlsManagerSettings)
 import System.Environment (getArgs)
 
-import Gozer.Config (parseConfigFile)
-import Gozer.Commands (deleteOlder)
+import Gozer (deleteOlder, parseConfigFile)
 
 main :: IO ()
 main = do
