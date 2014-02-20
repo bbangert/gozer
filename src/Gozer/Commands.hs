@@ -1,16 +1,17 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
 module Gozer.Commands (
     loadTweets,
-    tweetListWhile,
     tweetsNewerThan,
     deleteTweets,
+    deleteOlder,
     ) where
 
+import Control.Applicative ((<$>))
 import Crypto.Random (SystemRNG)
 import Data.Aeson (decode)
 import Data.ByteString.Lazy (ByteString)
 import Data.Maybe (fromJust)
-import Data.Time.Clock (UTCTime,  NominalDiffTime, addUTCTime)
+import Data.Time.Clock (UTCTime, NominalDiffTime, addUTCTime, getCurrentTime)
 import Network.OAuth (
     oauth, defaultServer,
     Cred, Permanent
@@ -21,10 +22,9 @@ import Network.HTTP.Client (
     )
 import Network.HTTP.Client (parseUrl)
 import Pipes (
-    lift, yield, await,
+    lift, yield, await, runEffect, (>->),
     Producer, Consumer
     )
-import qualified Pipes as P
 import qualified Pipes.Prelude as PL
 
 import Gozer.Types (Tweet, tweetId, tweetCreatedAt)
@@ -54,20 +54,23 @@ destroyUrl i = (makeUrl i) {method="POST"}
             . (++".json") . show
 
 -- | Produces tweets as long as asked to by loading more tweets from twitter
+-- Stops producing tweets if the last result is the same as the index we
+-- start at
 loadTweets :: String -> Maybe Integer -> Cred Permanent -> Manager -> SystemRNG
               -> Producer Tweet IO ()
 loadTweets name index creds m gen = do
     (resp, gen') <- lift $ runRequest (timelineUrl name index) creds m gen
     let tweets = fromJust $ (decode (responseBody resp) :: Maybe [Tweet])
     mapM_ yield tweets
-    let lastId = tweetId $ last tweets
-    loadTweets name (Just lastId) creds m gen'
-
-tweetListWhile :: String -> Cred Permanent -> Manager -> SystemRNG
-                  -> (Tweet -> Bool)
-                  -> IO [Tweet]
-tweetListWhile name creds m gen predicate = PL.toListM $
-    loadTweets name Nothing creds m gen P.>-> PL.takeWhile predicate
+    if null tweets
+        then return ()
+        else do
+            let lastId = tweetId $ last tweets
+            case index of
+                Just x -> if x == lastId
+                    then return ()
+                    else loadTweets name (Just lastId) creds m gen'
+                Nothing -> loadTweets name (Just lastId) creds m gen'
 
 tweetsNewerThan :: NominalDiffTime -> UTCTime -> Tweet -> Bool
 tweetsNewerThan period now t = tweetCreatedAt t > oldTime
@@ -79,3 +82,14 @@ deleteTweets creds m gen = do
     tweet <- await
     (_, gen') <- lift $ runRequest (destroyUrl $ tweetId tweet) creds m gen
     deleteTweets creds m gen'
+
+-- Wraps up several components to run the complete delete pipeline
+deleteOlder :: Manager -> Cred Permanent -> SystemRNG
+            -> String
+            -> NominalDiffTime
+            -> IO ()
+deleteOlder m creds gen name days = do
+    newer <- tweetsNewerThan (-60*60*24*days) <$> getCurrentTime
+    runEffect $ loadTweets name Nothing creds m gen
+            >-> PL.dropWhile newer
+            >-> deleteTweets creds m gen

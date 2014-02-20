@@ -3,14 +3,27 @@ module Main where
 
 import Control.Applicative ((<$>))
 import Crypto.Random (SystemRNG, cprgCreate, createEntropyPool)
-import Data.Time.Clock (getCurrentTime)
-import Network.OAuth (Cred, Permanent)
-import Network.HTTP.Client (Manager, newManager)
+import Network.HTTP.Client (newManager)
 import Network.HTTP.Client.TLS (tlsManagerSettings)
+import System.Environment (getArgs)
 
-main :: IO (Cred Permanent, Manager, SystemRNG)
+import Gozer.Config (parseConfigFile)
+import Gozer.Commands (deleteOlder)
+
+main :: IO ()
 main = do
-    m <- newManager tlsManagerSettings
-    gen :: SystemRNG <- cprgCreate <$> createEntropyPool
-    let creds = loadCredentials
-    return (creds, m, gen)
+    args <- getArgs
+    case args of
+        [filename] -> runDelete filename
+        _          -> showError
+    where showError = ioError $ userError "Usage: gozer CONFIGFILE"
+
+runDelete :: String -> IO ()
+runDelete filename = do
+    parsed <- parseConfigFile filename
+    case parsed of
+        (Left (_, errExpl)) -> ioError $ userError errExpl
+        (Right (username, dur, creds))      -> do
+            m <- newManager tlsManagerSettings
+            gen :: SystemRNG <- cprgCreate <$> createEntropyPool
+            deleteOlder m creds gen username dur
