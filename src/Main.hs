@@ -14,15 +14,14 @@ main = do
     args <- getArgs
     case args of
         [filename] -> runDelete filename
-        _          -> showError
-    where showError = ioError $ userError "Usage: gozer CONFIGFILE"
+        _          -> ioError $ userError "Usage: gozer CONFIGFILE"
 
 runDelete :: String -> IO ()
 runDelete filename = do
     parsed <- parseConfigFile filename
     case parsed of
-        (Left (_, errExpl)) -> ioError $ userError errExpl
-        (Right (username, dur, creds))      -> do
+        (Left (_, errExpl))            -> ioError $ userError errExpl
+        (Right (username, dur, creds)) -> do
             m <- newManager tlsManagerSettings
             gen :: SystemRNG <- cprgCreate <$> createEntropyPool
             deleteOlder m creds gen username dur

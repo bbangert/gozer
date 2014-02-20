@@ -36,7 +36,7 @@ runRequest :: Request -> Cred Permanent -> Manager -> SystemRNG
 runRequest req creds m gen = do
     (signedReq, gen') <- oauth creds defaultServer req gen
     resp <- httpLbs signedReq m
-    return $ (resp, gen')
+    return (resp, gen')
 
 -- | Timeline URL for retrieving tweets
 timelineUrl :: String -> Maybe Integer -> Request

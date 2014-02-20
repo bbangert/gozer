@@ -1,4 +1,3 @@
-{-# LANGUAGE TupleSections #-}
 module Gozer.Config (
     parseConfigFile
     ) where
