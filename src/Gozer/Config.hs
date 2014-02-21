@@ -17,12 +17,10 @@ parseConfigFile :: String
 parseConfigFile filename = do
     rv <- runErrorT $ do
         cp <- join $ liftIO $ readfile emptyCP filename
-        accessToken <- Token
-            <$> (pack <$> get cp "DEFAULT" "access_token")
-            <*> (pack <$> get cp "DEFAULT" "access_token_secret")
-        clientToken <- Token
-            <$> (pack <$> get cp "DEFAULT" "api_key")
-            <*> (pack <$> get cp "DEFAULT" "api_secret")
+        accessToken <- Token <$> (pack <$> get cp "DEFAULT" "access_token")
+                             <*> (pack <$> get cp "DEFAULT" "access_token_secret")
+        clientToken <- Token <$> (pack <$> get cp "DEFAULT" "api_key")
+                             <*> (pack <$> get cp "DEFAULT" "api_secret")
         time <- get cp "DEFAULT" "duration"
         username <- get cp "DEFAULT" "username"
         let dur = fromIntegral (time :: Int)
