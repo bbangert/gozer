@@ -18,10 +18,9 @@ import Network.OAuth (
     Cred, Permanent
     )
 import Network.HTTP.Client (
-    httpLbs, responseBody, method,
+    httpLbs, responseBody, method, parseUrl,
     Request, Response, Manager
     )
-import Network.HTTP.Client (parseUrl)
 import Pipes (
     lift, yield, await, runEffect, (>->),
     Producer, Consumer
@@ -43,7 +42,7 @@ timelineUrl :: String -> Maybe Integer -> Request
 timelineUrl name sinceId = fromJust . parseUrl $ concat
     [ "https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name="
     , name
-    , "&include_rts=false&count=200"
+    , "&include_rts=true&count=200"
     , maybe "" (("&max_id=" ++) . show) sinceId
     ]
 
