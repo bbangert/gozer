@@ -7,6 +7,7 @@ module Gozer.Commands (
     ) where
 
 import Control.Applicative ((<$>))
+import Control.Monad (unless)
 import Crypto.Random (SystemRNG)
 import Data.Aeson (decode)
 import Data.ByteString.Lazy (ByteString)
@@ -17,10 +18,9 @@ import Network.OAuth (
     Cred, Permanent
     )
 import Network.HTTP.Client (
-    httpLbs, responseBody, method,
+    httpLbs, responseBody, method, parseUrl,
     Request, Response, Manager
     )
-import Network.HTTP.Client (parseUrl)
 import Pipes (
     lift, yield, await, runEffect, (>->),
     Producer, Consumer
@@ -35,14 +35,14 @@ runRequest :: Request -> Cred Permanent -> Manager -> SystemRNG
 runRequest req creds m gen = do
     (signedReq, gen') <- oauth creds defaultServer req gen
     resp <- httpLbs signedReq m
-    return $ (resp, gen')
+    return (resp, gen')
 
 -- | Timeline URL for retrieving tweets
 timelineUrl :: String -> Maybe Integer -> Request
 timelineUrl name sinceId = fromJust . parseUrl $ concat
     [ "https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name="
     , name
-    , "&include_rts=false&count=200"
+    , "&include_rts=true&count=200"
     , maybe "" (("&max_id=" ++) . show) sinceId
     ]
 
@@ -62,15 +62,11 @@ loadTweets name index creds m gen = do
     (resp, gen') <- lift $ runRequest (timelineUrl name index) creds m gen
     let tweets = fromJust $ (decode (responseBody resp) :: Maybe [Tweet])
     mapM_ yield tweets
-    if null tweets
-        then return ()
-        else do
-            let lastId = tweetId $ last tweets
-            case index of
-                Just x -> if x == lastId
-                    then return ()
-                    else loadTweets name (Just lastId) creds m gen'
-                Nothing -> loadTweets name (Just lastId) creds m gen'
+    unless (null tweets) $ do
+        let lastId = tweetId $ last tweets
+        case index of
+            Just x -> unless (x == lastId) $ loadTweets name (Just lastId) creds m gen'
+            Nothing -> loadTweets name (Just lastId) creds m gen'
 
 tweetsNewerThan :: NominalDiffTime -> UTCTime -> Tweet -> Bool
 tweetsNewerThan period now t = tweetCreatedAt t > oldTime
