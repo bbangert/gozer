@@ -28,7 +28,7 @@ executable gozer
                       , http-client-tls >= 0.2
                       , http-client     >= 0.2.0
                       , mtl             >= 2.1
-                      , oauthenticated  >= 0.1
+                      , oauthenticated  >= 0.1.2
                       , pipes           >= 4.1.0
                       , text            >= 0.11.3.1
                       , time            >= 1.4.0.1
@@ -57,8 +57,9 @@ Library
                       , crypto-random   >= 0.0.7
                       , http-client-tls >= 0.2
                       , http-client     >= 0.2.0
+                      , MissingH        >= 1.2.0.2
                       , mtl             >= 2.1
-                      , oauthenticated  >= 0.1
+                      , oauthenticated  >= 0.1.2
                       , pipes           >= 4.1.0
                       , text            >= 0.11.3.1
                       , time            >= 1.4.0.1
