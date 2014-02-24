@@ -26,7 +26,7 @@ zonedToUTC obj name = zonedTimeToUTC <$> obj .: name
 -- Parse out the portions of the tweet we care about, the rest of the
 -- attributes are ignored
 instance FromJSON Tweet where
-    parseJSON (Object v) = Tweet <$> v `zonedToUTC` "created_at"
-                                 <*> v .: "text"
-                                 <*> v .: "id"
-    parseJSON _          = mzero
+  parseJSON (Object v) = Tweet <$> v `zonedToUTC` "created_at"
+                               <*> v .: "text"
+                               <*> v .: "id"
+  parseJSON _          = mzero
