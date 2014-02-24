@@ -4,18 +4,19 @@ module Gozer.Types (
     tweetCreatedAt, tweetId, tweetText,
     ) where
 
-import Control.Applicative ((<$>), (<*>))
-import Control.Monad (mzero)
-import Data.Aeson (parseJSON, FromJSON, Value(Object), (.:), Object)
-import Data.Aeson.Types (Parser)
-import Data.Text (Text)
-import Data.Time.Clock (UTCTime)
-import Data.Time.LocalTime (zonedTimeToUTC)
+import           Control.Applicative ((<$>), (<*>))
+import           Control.Monad       (mzero)
+import           Data.Aeson          (FromJSON, Object, Value (Object),
+                                      parseJSON, (.:))
+import           Data.Aeson.Types    (Parser)
+import           Data.Text           (Text)
+import           Data.Time.Clock     (UTCTime)
+import           Data.Time.LocalTime (zonedTimeToUTC)
 
 data Tweet = Tweet
-    { tweetCreatedAt  :: UTCTime
-    , tweetText       :: Text
-    , tweetId         :: Integer
+    { tweetCreatedAt :: UTCTime
+    , tweetText      :: Text
+    , tweetId        :: Integer
     } deriving (Show)
 
 -- Parser that handles ZonedTime but converts them to UTCTime

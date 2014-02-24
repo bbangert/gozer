@@ -3,5 +3,5 @@ module Gozer (
     parseConfigFile
     ) where
 
-import Gozer.Config (parseConfigFile)
-import Gozer.Commands (deleteOlder)
+import           Gozer.Commands (deleteOlder)
+import           Gozer.Config   (parseConfigFile)

@@ -1,4 +1,5 @@
-{-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
+{-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 module Gozer.Commands (
     loadTweets,
     tweetsNewerThan,
@@ -6,28 +7,22 @@ module Gozer.Commands (
     deleteOlder,
     ) where
 
-import Control.Applicative ((<$>))
-import Control.Monad (unless)
-import Crypto.Random (SystemRNG)
-import Data.Aeson (decode)
-import Data.ByteString.Lazy (ByteString)
-import Data.Maybe (fromJust)
-import Data.Time.Clock (UTCTime, NominalDiffTime, addUTCTime, getCurrentTime)
-import Network.OAuth (
-    oauth, defaultServer,
-    Cred, Permanent
-    )
-import Network.HTTP.Client (
-    httpLbs, responseBody, method, parseUrl,
-    Request, Response, Manager
-    )
-import Pipes (
-    lift, yield, await, runEffect, (>->),
-    Producer, Consumer
-    )
-import qualified Pipes.Prelude as PL
+import           Control.Applicative  ((<$>))
+import           Control.Monad        (unless)
+import           Crypto.Random        (SystemRNG)
+import           Data.Aeson           (decode)
+import           Data.ByteString.Lazy (ByteString)
+import           Data.Maybe           (fromJust)
+import           Data.Time.Clock      (NominalDiffTime, UTCTime, addUTCTime,
+                                       getCurrentTime)
+import           Network.HTTP.Client  (Manager, Request, Response, httpLbs,
+                                       method, parseUrl, responseBody)
+import           Network.OAuth        (Cred, Permanent, defaultServer, oauth)
+import           Pipes                (Consumer, Producer, await, lift,
+                                       runEffect, yield, (>->))
+import qualified Pipes.Prelude        as PL
 
-import Gozer.Types (Tweet, tweetId, tweetCreatedAt)
+import           Gozer.Types          (Tweet, tweetCreatedAt, tweetId)
 
 -- | Signs and runs a request to get back a response
 runRequest :: Request -> Cred Permanent -> Manager -> SystemRNG

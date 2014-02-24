@@ -1,13 +1,15 @@
-{-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
+{-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 module Main where
 
-import Control.Applicative ((<$>))
-import Crypto.Random (SystemRNG, cprgCreate, createEntropyPool)
-import Network.HTTP.Client (newManager)
-import Network.HTTP.Client.TLS (tlsManagerSettings)
-import System.Environment (getArgs)
+import           Control.Applicative     ((<$>))
+import           Crypto.Random           (SystemRNG, cprgCreate,
+                                          createEntropyPool)
+import           Network.HTTP.Client     (newManager)
+import           Network.HTTP.Client.TLS (tlsManagerSettings)
+import           System.Environment      (getArgs)
 
-import Gozer (deleteOlder, parseConfigFile)
+import           Gozer                   (deleteOlder, parseConfigFile)
 
 main :: IO ()
 main = do

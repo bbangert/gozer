@@ -2,15 +2,13 @@ module Gozer.Config (
     parseConfigFile
     ) where
 
-import Data.ByteString.Char8 (pack)
-import Control.Applicative ((<$>), (<*>))
-import Control.Monad.Error (runErrorT, liftIO, join)
-import Data.ConfigFile (readfile, emptyCP, get, CPError)
-import Data.Time.Clock (NominalDiffTime)
-import Network.OAuth (
-    clientCred, permanentCred,
-    Cred, Token(..), Permanent
-    )
+import           Control.Applicative   ((<$>), (<*>))
+import           Control.Monad.Error   (join, liftIO, runErrorT)
+import           Data.ByteString.Char8 (pack)
+import           Data.ConfigFile       (CPError, emptyCP, get, readfile)
+import           Data.Time.Clock       (NominalDiffTime)
+import           Network.OAuth         (Cred, Permanent, Token (..), clientCred,
+                                        permanentCred)
 
 parseConfigFile :: String
                 -> IO (Either CPError (String, NominalDiffTime, Cred Permanent))
