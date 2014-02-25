@@ -22,7 +22,8 @@ runDelete :: String -> IO ()
 runDelete filename = do
   parsed <- parseConfigFile filename
   case parsed of
-    (Left (_, errExpl))            -> ioError $ userError errExpl
+    (Left (_, errExpl))            -> ioError $ userError
+                                    $ "Parse error in config file: " ++ errExpl
     (Right (username, dur, creds)) -> do
       m <- newManager tlsManagerSettings
       gen :: SystemRNG <- cprgCreate <$> createEntropyPool
