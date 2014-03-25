@@ -22,7 +22,7 @@ Compiling
 .. note::
 
     For faster dependency installs, newer cabals support ``-j``, ie.:
-        ``cabal install -j8 --only-dependencies
+        ``cabal install -j8 --only-dependencies``
 
 4. Compile: ``cabal build``
 
