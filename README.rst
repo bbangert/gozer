@@ -23,6 +23,7 @@ Compiling
 
     For faster dependency installs, newer cabals support ``-j``, ie.:
         ``cabal install -j8 --only-dependencies
+
 4. Compile: ``cabal build``
 
 You should now have a ``gozer`` binary under ``dist/build/gozer``.
