@@ -105,6 +105,6 @@ deleteOlder m gen (ConfigSettings name days creds tweetMin) = do
   tweetNum <- tweetDiff name tweetMin creds m diffGen
   newer <- tweetsNewerThan (-60*60*24*days) <$> getCurrentTime
   runEffect $ loadTweets name Nothing creds m loadGen
-         >-> PL.dropWhile newer
-         >-> PL.take tweetNum
-         >-> deleteTweets creds m deleteGen
+          >-> PL.dropWhile newer
+          >-> PL.take tweetNum
+          >-> deleteTweets creds m deleteGen
