@@ -1,7 +1,8 @@
 module Gozer (
-    deleteOlder,
-    parseConfigFile
+      ConfigSettings
+    , deleteOlder
+    , parseConfigFile
     ) where
 
 import           Gozer.Commands (deleteOlder)
-import           Gozer.Config   (parseConfigFile)
+import           Gozer.Config   (parseConfigFile, ConfigSettings)

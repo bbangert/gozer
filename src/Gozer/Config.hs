@@ -1,5 +1,6 @@
 module Gozer.Config (
-    parseConfigFile
+      parseConfigFile
+    , ConfigSettings (..)
     ) where
 
 import           Control.Applicative   ((<$>), (<*>))
@@ -9,9 +10,16 @@ import           Data.ConfigFile       (CPError, emptyCP, get, readfile)
 import           Data.Time.Clock       (NominalDiffTime)
 import           Network.OAuth         (Cred, Permanent, Token (..), clientCred,
                                         permanentCred)
+import           Text.Read             (readMaybe)
+
+data ConfigSettings = ConfigSettings { cUsername    :: String
+                                     , cOldest      :: NominalDiffTime
+                                     , cCredentials :: Cred Permanent
+                                     , cMaintainNum :: Maybe Int
+}
 
 parseConfigFile :: String
-                -> IO (Either CPError (String, NominalDiffTime, Cred Permanent))
+                -> IO (Either CPError ConfigSettings)
 parseConfigFile filename = runErrorT $ do
   cp <- join $ liftIO $ readfile emptyCP filename
   accessToken <- Token <$> (pack <$> get cp "DEFAULT" "access_token")
@@ -20,6 +28,8 @@ parseConfigFile filename = runErrorT $ do
                        <*> (pack <$> get cp "DEFAULT" "api_secret")
   time <- get cp "DEFAULT" "duration"
   username <- get cp "DEFAULT" "username"
+  maintainNum <- either (const Nothing) readMaybe <$>
+    runErrorT (get cp "DEFAULT" "minimum_tweets")
   let dur = fromIntegral (time :: Int)
       creds = permanentCred accessToken $ clientCred clientToken
-  return (username, dur, creds)
+  return $ ConfigSettings username dur creds maintainNum

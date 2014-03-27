@@ -42,6 +42,7 @@ Create a config file:
     api_secret = API_SECRET
     duration = 60       # How old (in days) tweets to delete should be
     username = twitter  # twitter username
+    minimum_tweets = 1500 # (Optional) Minimum tweets to retain
 
 Then run it:
 
