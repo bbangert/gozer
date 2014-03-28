@@ -65,9 +65,7 @@ tweetDiff :: String -> Maybe Int -> Cred Permanent -> Manager -> SystemRNG -> IO
 tweetDiff name tweetMin creds m gen = do
   resp <- fst <$> runRequest (informationURL name) creds m gen
   let tweetCount = decodeTweetCount $ responseBody resp
-  case tweetMin of
-    Nothing -> return tweetCount
-    Just i  -> return $ max (tweetCount-i) 0
+  return $ maybe tweetCount (\i -> max (tweetCount-i) 0) tweetMin
 
 -- | Produces tweets as long as asked to by loading more tweets from twitter
 -- Stops producing tweets if the last result is the same as the index we
