@@ -44,7 +44,7 @@ decodeTweetCount = fromJust . parseMaybe (.: "statuses_count") . fromJust . deco
 
 runTwitterCommand :: TwitterCommand a -> TwitterConfig -> SystemRNG
                   -> IO (a, SystemRNG)
-runTwitterCommand tc conf rng = runStateT (runReaderT tc conf) rng
+runTwitterCommand tc conf = runStateT (runReaderT tc conf)
 
 -- | Signs and runs a request to get back a response
 runRequest :: Request -> TwitterCommand (Response ByteString)
@@ -53,8 +53,7 @@ runRequest req = do
   gen <- get
   (signedReq, gen') <- liftIO $ oauth creds defaultServer req gen
   put gen'
-  resp <- liftIO $ httpLbs signedReq m
-  return resp
+  liftIO $ httpLbs signedReq m
 
 -- | Timeline URL for retrieving tweets
 timelineUrl :: String -> Maybe Integer -> Request
