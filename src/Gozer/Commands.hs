@@ -28,10 +28,7 @@ import qualified Pipes.Prelude              as PL
 import           Gozer.Config               (ConfigSettings (ConfigSettings))
 import           Gozer.Types                (Tweet, tweetCreatedAt, tweetId)
 
-data TwitterConfig = TwitterConfig {
-    tweetCreds   :: Cred Permanent
-  , tweetManager :: Manager
-}
+data TwitterConfig = TwitterConfig (Cred Permanent) Manager
 
 type TwitterCommand = ReaderT TwitterConfig (StateT SystemRNG IO)
 
