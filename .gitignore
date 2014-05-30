@@ -3,7 +3,4 @@
 *.swp
 *.brn
 /dist
-/megahaskhal.aux
-/megahaskhal.hp
-/megahaskhal.prof
-/megahaskhal.ps
+config.ini
