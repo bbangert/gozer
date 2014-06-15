@@ -5,9 +5,10 @@ module Gozer.Commands (
     ) where
 
 import           Control.Applicative        ((<$>))
+import           Control.Concurrent         (forkIO)
 import           Control.Monad              (unless, void)
-import           Control.Monad.Reader       (ReaderT, runReaderT, ask)
-import           Control.Monad.State.Strict (StateT, runStateT, get, put)
+import           Control.Monad.Reader       (ReaderT, ask, runReaderT)
+import           Control.Monad.State.Strict (StateT, get, put, runStateT)
 import           Control.Monad.Trans        (liftIO)
 import           Crypto.Random              (SystemRNG, cprgFork)
 import           Data.Aeson                 (decode, (.:))
@@ -114,7 +115,8 @@ tweetsNewerThan period now t = tweetCreatedAt t > oldTime
 tweetDeleter :: TwitterConfig -> SystemRNG -> Consumer Tweet IO ()
 tweetDeleter tc gen = do
   tweet <- await
-  (_, gen') <- lift $ runTwitterCommand (deleteTweet tweet) tc gen
+  let (delGen, gen') = cprgFork gen
+  _ <- lift $ forkIO $ void $ runTwitterCommand (deleteTweet tweet) tc delGen
   tweetDeleter tc gen'
 
 -- Wraps up several components to run the complete delete pipeline
