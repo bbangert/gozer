@@ -116,7 +116,7 @@ tweetDeleter :: TwitterConfig -> SystemRNG -> Consumer Tweet IO ()
 tweetDeleter tc gen = do
   tweet <- await
   let (delGen, gen') = cprgFork gen
-  _ <- lift $ forkIO $ void $ runTwitterCommand (deleteTweet tweet) tc delGen
+  _ <- lift $ void $ runTwitterCommand (deleteTweet tweet) tc delGen
   tweetDeleter tc gen'
 
 -- Wraps up several components to run the complete delete pipeline
