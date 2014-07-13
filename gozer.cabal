@@ -1,5 +1,5 @@
 name:                gozer
-version:             0.1.2.0
+version:             0.1.3.0
 synopsis:            Gozer the Gozerian destroys.
 description:         Destroyer of Tweets
 license:             BSD3
@@ -17,52 +17,25 @@ flag developer
   default: False
 
 executable gozer
-  default-language: Haskell2010
-  main-is:    src/Main.hs
-  Build-depends:        base            >= 4.6      && <4.8
-                      , aeson           >= 0.7.0.1
-                      , bytestring      >= 0.10.0.2
-                      , containers      >= 0.5.0
-                      , crypto-random   >= 0.0.7
-                      , gozer           >= 0.1
-                      , http-client-tls >= 0.2
-                      , http-client     >= 0.2.0
-                      , mtl             >= 2.1
-                      , oauthenticated  >= 0.1.2
-                      , pipes           >= 4.1.0
-                      , text            >= 0.11.3.1
-                      , time            >= 1.4.0.1
-  ghc-options: -O2 -Wall -threaded -rtsopts
-
-Library
-  default-language: Haskell2010
-  Exposed-modules:
-    Gozer
+  default-language:     Haskell2010
+  main-is:              Main.hs
+  hs-source-dirs:       src
+  other-modules:
     Gozer.Config
-    Gozer.Commands
-    Gozer.Types
 
-  -- other-modules:
-  -- other-extensions:
-
+  build-depends:
+      base                  >= 4.6      && <4.8
+    , authenticate-oauth    >= 1.5
+    , bytestring            >= 0.10.0.2
+    , conduit               >= 1.1.6
+    , ConfigFile            >= 1.1.2
+    , containers            >= 0.5.0
+    , monad-logger          >= 0.3.6.1
+    , lens                  >= 4.2
+    , mtl                   >= 2.1
+    , old-locale            >= 1.0
+    , text                  >= 0.11.3.1
+    , time                  >= 1.4.0.1
+    , transformers          >= 0.4.1
+    , twitter-conduit       >= 0.0.5.2
   ghc-options: -O2 -Wall -threaded -rtsopts
-  if flag(developer)
-    ghc-prof-options: -auto-all
-
-  Build-depends:        base            >= 4.6      && <4.8
-                      , aeson           >= 0.7.0.1
-                      , bytestring      >= 0.10.0.2
-                      , ConfigFile      >= 1.1
-                      , containers      >= 0.5.0
-                      , crypto-random   >= 0.0.7
-                      , http-client-tls >= 0.2
-                      , http-client     >= 0.2.0
-                      , MissingH        >= 1.2.0.2
-                      , mtl             >= 2.1
-                      , oauthenticated  >= 0.1.2
-                      , pipes           >= 4.1.0
-                      , text            >= 0.11.3.1
-                      , time            >= 1.4.0.1
-
-  Hs-source-dirs:
-    src

@@ -1,15 +1,30 @@
-{-# LANGUAGE OverloadedStrings   #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-module Main where
+{-# LANGUAGE OverloadedStrings #-}
 
-import           Control.Applicative     ((<$>))
-import           Crypto.Random           (SystemRNG, cprgCreate,
-                                          createEntropyPool)
-import           Network.HTTP.Client     (newManager)
-import           Network.HTTP.Client.TLS (tlsManagerSettings)
-import           System.Environment      (getArgs)
+module Main
+    (
+      main
+    ) where
 
-import           Gozer                   (deleteOlder, parseConfigFile)
+import           Control.Applicative  ((<$>))
+import           Control.Lens         ((^.))
+import           Control.Monad        (void)
+import           Control.Monad.Logger (runNoLoggingT)
+import           Data.Conduit         (($$), ($=))
+import qualified Data.Conduit.List    as CL
+import           Data.Maybe           (fromJust)
+import           Data.Time.Clock      (NominalDiffTime, UTCTime, addUTCTime,
+                                       getCurrentTime)
+import           Data.Time.Format     (readTime)
+import           Data.Time.LocalTime  (zonedTimeToUTC)
+import           System.Environment   (getArgs)
+import           System.Locale        (defaultTimeLocale)
+import           Web.Twitter.Conduit  (Status, User,
+                                       UserParam (ScreenNameParam), call,
+                                       destroyId, runTW, sourceWithMaxId,
+                                       statusCreatedAt, statusId, userTimeline,
+                                       userTweets, usersShow)
+
+import           Gozer                (ConfigSettings (..), parseConfigFile)
 
 main :: IO ()
 main = do
@@ -22,9 +37,33 @@ runDelete :: String -> IO ()
 runDelete filename = do
   parsed <- parseConfigFile filename
   case parsed of
-    (Left (_, errExpl))            -> ioError $ userError
-                                    $ "Parse error in config file: " ++ errExpl
-    (Right config) -> do
-      m <- newManager tlsManagerSettings
-      gen :: SystemRNG <- cprgCreate <$> createEntropyPool
-      deleteOlder m gen config
+    Left (_, errExpl) -> ioError $ userError
+                                 $ "Parse error in config file: " ++ errExpl
+    Right (ConfigSettings twInfo username oldest maintain) -> do
+        let username' = ScreenNameParam username
+        olderTweets <- oldEnough (-60*60*24*oldest) <$> getCurrentTime
+        runNoLoggingT . runTW twInfo $ do
+            user <- call $ usersShow username'
+            sourceWithMaxId (userTimeline username')
+                $= CL.filter olderTweets
+                $= CL.isolate (deleteCount user maintain)
+                $$ CL.mapM_  $ \status ->
+                    void $ call $ destroyId (status ^. statusId)
+        return ()
+
+convertTwitterTime :: String -> UTCTime
+convertTwitterTime = zonedTimeToUTC . readTime defaultTimeLocale "%a %b %d %T %Z %Y"
+
+oldEnough :: NominalDiffTime -> UTCTime -> Status -> Bool
+oldEnough period now status = oldTime > statusDateTime
+  where
+    statusDate = status ^. statusCreatedAt
+    statusDateTime = convertTwitterTime statusDate
+    oldTime = addUTCTime period now
+
+tweetCount :: User -> Int
+tweetCount u = fromJust $ u ^. userTweets
+
+deleteCount :: User -> Maybe Int -> Int
+deleteCount user Nothing  = tweetCount user
+deleteCount user (Just m) = tweetCount user - m
