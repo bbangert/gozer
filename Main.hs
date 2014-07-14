@@ -43,26 +43,23 @@ main :: IO ()
 main = do
   args <- getArgs
   case args of
-    [filename] -> runDelete filename
+    [filename] -> parseConfigFile filename >>= checkConfig
     _          -> ioError $ userError "Usage: gozer CONFIGFILE"
 
-runDelete :: String -> IO ()
-runDelete filename = do
-  parsed <- parseConfigFile filename
-  case parsed of
-    Left (_, errExpl) -> ioError $ userError
-                                 $ "Parse error in config file: " ++ errExpl
-    Right (ConfigSettings twInfo username oldest maintain) -> do
-        let username' = ScreenNameParam username
-        olderTweets <- oldEnough (-60*60*24*oldest) <$> getCurrentTime
-        runNoLoggingT . runTW twInfo $ do
-            user <- call $ usersShow username'
-            sourceWithMaxId (userTimeline username')
-                $= CL.filter olderTweets
-                $= CL.isolate (deleteCount user maintain)
-                $$ CL.mapM_  $ \status ->
-                    void $ call $ destroyId (status ^. statusId)
-        return ()
+checkConfig :: Either CPError ConfigSettings -> IO ()
+checkConfig (Left err) =
+    ioError $ userError $ "Parse error in config file: " ++ snd err
+checkConfig (Right (ConfigSettings twInfo username oldest maintain)) = do
+    olderTweets <- oldEnough (-60*60*24*oldest) <$> getCurrentTime
+    runNoLoggingT . runTW twInfo $ do
+        user <- call $ usersShow username'
+        sourceWithMaxId (userTimeline username')
+            $= CL.filter olderTweets
+            $= CL.isolate (deleteCount user maintain)
+            $$ CL.mapM_  $ \status ->
+                void $ call $ destroyId (status ^. statusId)
+  where
+    username' = ScreenNameParam username
 
 -- | Parse a INI style config file
 parseConfigFile :: String
