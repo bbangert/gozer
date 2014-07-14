@@ -101,11 +101,7 @@ oldEnough period now status = oldTime > statusDateTime
     statusDateTime = convertTwitterTime statusDate
     oldTime = addUTCTime period now
 
--- | Pull out the total tweet count for a user
-tweetCount :: User -> Int
-tweetCount u = fromJust $ u ^. userTweets
-
 -- | Calculate the max tweets that can be deleted
 deleteCount :: User -> Maybe Int -> Int
-deleteCount user Nothing  = tweetCount user
-deleteCount user (Just m) = tweetCount user - m
+deleteCount user = maybe total (total-)
+    where total = fromJust $ user ^. userTweets
