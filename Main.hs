@@ -74,6 +74,8 @@ parseConfigFile filename = runErrorT $ do
     apiSecret         <- extractPack cp "api_secret"
     time              <- dget cp "duration"
     username          <- dget cp "username"
+    maintainNum       <- either (const Nothing) readMaybe <$>
+        runErrorT (dget cp "minimum_tweets")
 
     let tokens = twitterOAuth { oauthConsumerKey = apiKey
                               , oauthConsumerSecret = apiSecret
@@ -82,9 +84,6 @@ parseConfigFile filename = runErrorT $ do
                            , ("oauth_token_secret", accessTokenSecret)
                            ]
         dur = fromIntegral (time :: Int)
-
-    maintainNum <- either (const Nothing) readMaybe <$>
-        runErrorT (dget cp "minimum_tweets")
     return $ ConfigSettings (setCredential tokens creds def) username dur maintainNum
   where
     dget cp = get cp "DEFAULT"
