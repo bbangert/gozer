@@ -41,15 +41,17 @@ data ConfigSettings = ConfigSettings
 
 main :: IO ()
 main = do
-  args <- getArgs
-  case args of
-    [filename] -> parseConfigFile filename >>= checkConfig
-    _          -> ioError $ userError "Usage: gozer CONFIGFILE"
+    args <- getArgs
+    case args of
+        [filename] -> parseConfigFile filename >>= checkConfig
+        _          -> ioError $ userError "Usage: gozer CONFIGFILE"
+  where
+    checkConfig (Left err) =
+        ioError $ userError $ "Parse error in config file: " ++ snd err
+    checkConfig (Right settings) = runDelete settings
 
-checkConfig :: Either CPError ConfigSettings -> IO ()
-checkConfig (Left err) =
-    ioError $ userError $ "Parse error in config file: " ++ snd err
-checkConfig (Right (ConfigSettings twInfo username oldest maintain)) = do
+runDelete :: ConfigSettings -> IO ()
+runDelete (ConfigSettings twInfo username oldest maintain) = do
     olderTweets <- oldEnough (-60*60*24*oldest) <$> getCurrentTime
     runNoLoggingT . runTW twInfo $ do
         user <- call $ usersShow username'
@@ -65,26 +67,24 @@ checkConfig (Right (ConfigSettings twInfo username oldest maintain)) = do
 parseConfigFile :: String
                 -> IO (Either CPError ConfigSettings)
 parseConfigFile filename = runErrorT $ do
-    cp <- join $ liftIO $ readfile emptyCP filename
-    let ecp = extractPack cp
+    cp                <- join $ liftIO $ readfile emptyCP filename
+    accessToken       <- extractPack cp "access_token"
+    accessTokenSecret <- extractPack cp "access_token_secret"
+    apiKey            <- extractPack cp "api_key"
+    apiSecret         <- extractPack cp "api_secret"
+    time              <- dget cp "duration"
+    username          <- dget cp "username"
 
-    accessToken       <- ecp "access_token"
-    accessTokenSecret <- ecp "access_token_secret"
-    let creds = Credential [ ("oauth_token", accessToken)
-                           , ("oauth_token_secret", accessTokenSecret)
-                           ]
-
-    apiKey    <- ecp "api_key"
-    apiSecret <- ecp "api_secret"
     let tokens = twitterOAuth { oauthConsumerKey = apiKey
                               , oauthConsumerSecret = apiSecret
                               }
+        creds = Credential [ ("oauth_token", accessToken)
+                           , ("oauth_token_secret", accessTokenSecret)
+                           ]
+        dur = fromIntegral (time :: Int)
 
-    time        <- dget cp "duration"
-    username    <- dget cp "username"
     maintainNum <- either (const Nothing) readMaybe <$>
         runErrorT (dget cp "minimum_tweets")
-    let dur = fromIntegral (time :: Int)
     return $ ConfigSettings (setCredential tokens creds def) username dur maintainNum
   where
     dget cp = get cp "DEFAULT"
