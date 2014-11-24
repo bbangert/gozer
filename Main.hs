@@ -104,4 +104,4 @@ oldEnough period now status = oldTime > statusDateTime
 -- | Calculate the max tweets that can be deleted
 deleteCount :: User -> Maybe Int -> Int
 deleteCount user = maybe total (total-)
-    where total = fromJust $ user ^. userTweets
+  where total = fromJust $ user ^. userTweets
